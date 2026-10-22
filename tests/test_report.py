@@ -112,3 +112,12 @@ def test_variable_search_level_filter(capsys):
     assert main(["--demo", "zmienne", "DEMO", "--poziom", "gmina"]) == 0
     out = capsys.readouterr().out
     assert "72305" in out and "64428" not in out  # wages only go down to powiat
+
+
+def test_methodology_break_is_flagged():
+    from bdl_report.builder import Series
+
+    s = Series(Indicator(1, "Gęstość"), None, {2021: 1894.8, 2022: 1859.2, 2023: 1149.2})
+    assert [y for y, _ in s.breaks] == [2023]
+    assert "2023 (-38%)" in s.break_note
+    assert Series(Indicator(1, "x"), None, {2020: 100, 2021: 110}).break_note == ""

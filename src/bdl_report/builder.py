@@ -32,6 +32,29 @@ class Series:
             return None
         return (self.values[years[-1]] / self.values[years[0]] - 1) * 100
 
+    @property
+    def breaks(self) -> list[tuple[int, float]]:
+        """Years with a year-on-year jump over 25 %, as ``(year, change %)``.
+
+        For stock measures such as population or density a jump like that almost always means
+        a methodology change at GUS (e.g. a census rebase or a new way of counting area), not a
+        real change, so the report points it out.
+        """
+        years = self.years
+        out = []
+        for prev, year in zip(years, years[1:], strict=False):
+            before, after = self.values[prev], self.values[year]
+            if before and abs(after / before - 1) > 0.25:
+                out.append((year, (after / before - 1) * 100))
+        return out
+
+    @property
+    def break_note(self) -> str:
+        if not self.breaks:
+            return ""
+        jumps = ", ".join(f"{y} ({c:+.0f}%)".replace(".", ",") for y, c in self.breaks)
+        return f"skok w {jumps}: prawdopodobnie zmiana metodologii GUS, porównuj ostrożnie"
+
 
 @dataclass
 class ReportData:

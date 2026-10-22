@@ -133,7 +133,9 @@ def _summary(ws: Worksheet, report: ReportData, footer: str) -> None:
     for n, s in enumerate(report.series, start=1):
         row += 1
         latest, change = s.latest, s.change_pct
-        note = f"dane: {s.source.name}" if s.source else ""
+        note = "; ".join(
+            n for n in (f"dane: {s.source.name}" if s.source else "", s.break_note) if n
+        )
         if not s.values:
             note = "brak danych w BDL dla tej jednostki i lat"
         values = [
@@ -166,7 +168,7 @@ def _summary(ws: Worksheet, report: ReportData, footer: str) -> None:
         if change is not None and better is not None and abs(change) >= 0.05:
             change_cell.font = _font(10, bold=True, color=GOOD if (change > 0) == better else BAD)
         ws.cell(row, 8).font = _font(9, color=MUTED, italic=True)
-        ws.row_dimensions[row].height = 22
+        ws.row_dimensions[row].height = 22 if len(note) < 45 else 14 * (len(note) // 40 + 1)
 
     compared = [s for s in report.series if s.comparisons and s.values]
     if compared:
@@ -247,6 +249,7 @@ def _series_sheet(ws: Worksheet, report: ReportData, s: Series, footer: str) -> 
             f"GUS: {s.variable.full_name}" if s.variable else "",
             f"jednostka miary: {unit_txt}" if unit_txt else "",
             f"dane powiatu ({s.source.name})" if s.source else "",
+            s.break_note,
         )
         if p
     )

@@ -36,10 +36,12 @@ def series_note(s: Series) -> str:
     parts = []
     if s.variable:
         parts.append(
-            f"GUS: {s.variable.name}" + (f" [{s.variable.unit}]" if s.variable.unit else "")
+            f"GUS: {s.variable.full_name}" + (f" [{s.variable.unit}]" if s.variable.unit else "")
         )
     if s.source:
         parts.append(f"brak danych dla gminy, pokazano {s.source.name}")
+    if s.break_note:
+        parts.append(s.break_note)
     return "; ".join(parts)
 
 
