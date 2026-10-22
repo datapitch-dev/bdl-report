@@ -26,6 +26,7 @@ class Indicator:
 DEFAULT_INDICATORS = [
     Indicator(72305, "Ludność ogółem"),
     Indicator(60559, "Gęstość zaludnienia (osoby na 1 km²)", compare=True),
+    Indicator(60270, "Stopa bezrobocia rejestrowanego", compare=True, higher_is_better=False),
     Indicator(64428, "Przeciętne wynagrodzenie brutto", compare=True, higher_is_better=True),
     Indicator(152702, "Podmioty gospodarki narodowej (REGON)", higher_is_better=True),
 ]

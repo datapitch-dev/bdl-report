@@ -32,12 +32,14 @@ _SUBJECTS = {
     "D2": "Gęstość zaludnienia oraz wskaźniki (DEMO)",
     "D3": "Przeciętne miesięczne wynagrodzenia brutto (DEMO)",
     "D4": "Podmioty wg sektorów własnościowych (DEMO)",
+    "D5": "Stopa bezrobocia rejestrowanego (DEMO)",
 }
 
 _VARIABLES = {
     72305: {"n1": "ogółem", "measureUnitName": "osoba", "subjectId": "D1", "level": 6},
     60559: {"n1": "ludność na 1 km2", "measureUnitName": "osoba", "subjectId": "D2", "level": 6},
     64428: {"n1": "ogółem", "measureUnitName": "zł", "subjectId": "D3", "level": 5},
+    60270: {"n1": "ogółem", "measureUnitName": "%", "subjectId": "D5", "level": 5},
     152702: {
         "n1": "podmioty gospodarki narodowej ogółem",
         "measureUnitName": "-",
@@ -61,6 +63,10 @@ def _value(unit: str, var: int, year: int) -> float | None:
         if unit == GMINA:
             return round(_value(GMINA, 72305, year) / 112.4)
         return {VOIVODESHIP: 118.0, POLAND: 123.0}[unit] - 0.2 * (year - 2014)
+    if var == 60270 and unit in (POWIAT, VOIVODESHIP, POLAND):
+        base = {POWIAT: 14.8, VOIVODESHIP: 11.2, POLAND: 11.4}[unit]
+        covid = 1.1 if year == 2020 else 0.0
+        return round(max(base - 0.95 * (year - 2014), base * 0.45) + covid, 1)
     if var == 64428 and unit in (POWIAT, VOIVODESHIP, POLAND):
         base = {POWIAT: 3_310, VOIVODESHIP: 3_620, POLAND: 4_003}[unit]
         return round(base * 1.064 ** (year - 2014), 2)

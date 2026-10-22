@@ -70,7 +70,7 @@ def test_cli_demo_writes_html_and_excel(tmp_path, capsys):
     assert "Przykładowo (DEMO)" in html and "data:image/png;base64," in html
     wb = load_workbook(next(tmp_path.glob("*.xlsx")))
     assert wb.sheetnames[0] == "Podsumowanie"
-    assert len(wb.sheetnames) == 5
+    assert len(wb.sheetnames) == 6
     assert "Raport:" in capsys.readouterr().out
 
 
