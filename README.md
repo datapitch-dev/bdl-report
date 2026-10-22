@@ -1,5 +1,7 @@
 # bdl-report
 
+[![testy](https://github.com/datapitch-dev/bdl-report/actions/workflows/tests.yml/badge.svg)](https://github.com/datapitch-dev/bdl-report/actions/workflows/tests.yml)
+
 Raport statystyczny dla dowolnej gminy, powiatu lub województwa z **Banku Danych Lokalnych GUS**
 (oficjalne, darmowe API `bdl.stat.gov.pl`). Jedno polecenie daje stronę HTML z wykresami
 i plik Excel z danymi oraz gotowymi wykresami, z porównaniem do województwa i całej Polski.
