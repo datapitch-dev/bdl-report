@@ -38,8 +38,11 @@ Excela, sklejanie lat i robienie wykresów. To narzędzie robi to w kilka sekund
   tydzień w lokalnej bazie SQLite, więc kolejne raporty dla tego samego regionu nie zużywają
   limitu. Darmowy klucz z [api.stat.gov.pl](https://api.stat.gov.pl) podnosi limity
   pięciokrotnie: wystarczy ustawić zmienną `GUS_API_KEY`.
-- **Excel gotowy do dalszej pracy.** Arkusz „Podsumowanie” plus osobny arkusz z danymi
-  i natywnym wykresem Excela dla każdego wskaźnika.
+- **Excel gotowy do oddania.** Arkusz „Podsumowanie” z tabelą wskaźników, zmianą w okresie
+  (na zielono lub czerwono, zależnie od tego, czy wzrost jest dobry), porównaniem z regionem
+  i krajem oraz definicjami zmiennych GUS. Do tego osobny arkusz z danymi i natywnym wykresem
+  Excela dla każdego wskaźnika. Prawdziwe formaty liczb, pasy wierszy, bez siatki, gotowe do
+  druku na A4 z numerami stron.
 
 ## Instalacja i użycie
 
@@ -80,7 +83,8 @@ src/bdl_report/
   cache.py       SQLite z odpowiedziami API
   indicators.py  domyślny zestaw wskaźników i wczytywanie własnego
   builder.py     zbiera dane: jednostka, powiat i województwo, braki z powiatu, porównania
-  render.py      HTML z wykresami (matplotlib, obrazki wbudowane w plik) i Excel (openpyxl)
+  render.py      HTML z wykresami (matplotlib, obrazki wbudowane w plik)
+  excel.py       sformatowany skoroszyt Excel z natywnymi wykresami (openpyxl)
   demo.py        udawane API z fikcyjną gminą, do demo i CI
   cli.py         wiersz poleceń
 ```

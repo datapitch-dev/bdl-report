@@ -1,4 +1,4 @@
-"""Turns ReportData into a self-contained HTML page and an Excel workbook."""
+"""Turns ReportData into a self-contained HTML page (the Excel workbook is in excel.py)."""
 
 from __future__ import annotations
 
@@ -13,10 +13,6 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 from matplotlib.ticker import FuncFormatter  # noqa: E402
-from openpyxl import Workbook  # noqa: E402
-from openpyxl.chart import LineChart, Reference  # noqa: E402
-from openpyxl.styles import Font  # noqa: E402
-from openpyxl.utils import get_column_letter  # noqa: E402
 
 from .builder import ReportData, Series  # noqa: E402
 
@@ -140,60 +136,3 @@ Wygenerowano {date.today().isoformat()} narzędziem bdl-report.</footer>
 </body></html>
 """
     Path(path).write_text(page, encoding="utf-8")
-
-
-def write_xlsx(report: ReportData, path: str | Path) -> None:
-    wb = Workbook()
-    summary = wb.active
-    summary.title = "Podsumowanie"
-    summary.append([report.unit.name, report.unit.level_name])
-    summary["A1"].font = Font(bold=True, size=14)
-    summary.append(["Jednostka nadrzędna", ", ".join(u.name for u in report.ancestors)])
-    summary.append(["Id jednostki (BDL)", report.unit.id])
-    summary.append([])
-    summary.append(["Wskaźnik", "Ostatnia wartość", "Rok", "Zmiana %", "Uwagi"])
-    for cell in summary[summary.max_row]:
-        cell.font = Font(bold=True)
-    for s in report.series:
-        latest = s.latest
-        change = s.change_pct
-        summary.append(
-            [
-                series_title(s),
-                latest[1] if latest else None,
-                latest[0] if latest else None,
-                round(change, 1) if change is not None else None,
-                series_note(s),
-            ]
-        )
-    for col, width in zip("ABCDE", (38, 16, 8, 10, 70), strict=True):
-        summary.column_dimensions[col].width = width
-
-    for s in report.series:
-        if not s.values:
-            continue
-        ws = wb.create_sheet(_sheet_name(series_title(s)))
-        names = [s.source.name if s.source else report.unit.name, *s.comparisons]
-        ws.append(["Rok", *names])
-        for cell in ws[1]:
-            cell.font = Font(bold=True)
-        all_series = [s.values, *s.comparisons.values()]
-        for year in sorted(set().union(*all_series)):
-            ws.append([year, *(series.get(year) for series in all_series)])
-        for i in range(1, len(names) + 2):
-            ws.column_dimensions[get_column_letter(i)].width = 22 if i > 1 else 8
-
-        chart = LineChart()
-        chart.title = series_title(s)
-        chart.height, chart.width = 8, 18
-        data = Reference(ws, min_col=2, max_col=len(names) + 1, min_row=1, max_row=ws.max_row)
-        chart.add_data(data, titles_from_data=True)
-        chart.set_categories(Reference(ws, min_col=1, min_row=2, max_row=ws.max_row))
-        ws.add_chart(chart, f"{get_column_letter(len(names) + 3)}2")
-    wb.save(path)
-
-
-def _sheet_name(title: str) -> str:
-    for ch in "[]:*?/\\":
-        title = title.replace(ch, " ")
-    return title[:31]

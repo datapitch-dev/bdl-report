@@ -14,8 +14,9 @@ from .builder import build
 from .cache import ResponseCache
 from .client import BdlClient, BdlError
 from .demo import GMINA, DemoSession
+from .excel import write_xlsx
 from .indicators import load_indicators
-from .render import fmt, write_html, write_xlsx
+from .render import fmt, write_html
 
 _UNIT_ID = re.compile(r"^\d{12}$")
 

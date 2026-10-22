@@ -87,3 +87,16 @@ def test_report_file_names_are_ascii(tmp_path):
         "przykladowo_demo.html",
         "przykladowo_demo.xlsx",
     }
+
+
+def test_excel_layout(tmp_path):
+    main(["--demo", "raport", "x", "-o", str(tmp_path), "--od", "2014", "--do", "2024"])
+    wb = load_workbook(tmp_path / "przykladowo_demo.xlsx")
+    ws = wb["Podsumowanie"]
+    assert ws["B1"].value == "Przykładowo (DEMO)"
+    assert ws.sheet_view.showGridLines is False
+    assert wb.properties.creator == "bdl-report"
+    sheet = wb["Przeciętne wynagrodzenie brutto"]
+    assert sheet["B5"].value == "Rok" and sheet["C5"].value == "Powiat przykładowski (DEMO)"
+    assert sheet["C6"].number_format == "#,##0"
+    assert len(sheet._charts) == 1
