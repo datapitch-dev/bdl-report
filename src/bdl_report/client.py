@@ -143,7 +143,9 @@ class BdlClient:
     def variable(self, var_id: int) -> Variable:
         return self._with_subject(Variable.from_api(self._get(f"variables/{var_id}", [])))
 
-    def search_variables(self, phrase: str, max_subjects: int = 8) -> list[Variable]:
+    def search_variables(
+        self, phrase: str, max_subjects: int = 4, max_variables: int = 300
+    ) -> list[Variable]:
         """Variables whose own name or whose subject's name contains ``phrase``.
 
         Variable names are often just "ogółem", so a search by subject ("bezrobocie",
@@ -156,7 +158,11 @@ class BdlClient:
         subjects = [
             s for s in self._get_all("subjects/search", [("name", phrase)]) if s.get("hasVariables")
         ]
+        # Capped: a broad phrase matches subjects with thousands of variables, and the anonymous
+        # API limit is 100 requests per 15 minutes.
         for subject in subjects[:max_subjects]:
+            if len(found) >= max_variables:
+                break
             for v in self._get_all("variables", [("subject-id", subject["id"])]):
                 found.setdefault(v["id"], Variable.from_api(v))
         return [self._with_subject(v) for v in found.values()]
