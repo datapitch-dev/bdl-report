@@ -111,7 +111,7 @@ def _report(client: BdlClient, args) -> int:
         extra = f", dane: {s.source.name}" if s.source else ""
         print(f"  {s.indicator.label}: {state}{extra}")
     print(f"Zapytań do API: {client.requests_sent}")
-    print(f"Raport: {html_path}\nExcel:  {xlsx_path}")
+    print(f"Raport: {html_path.resolve()}\nExcel:  {xlsx_path.resolve()}")
     return 0
 
 
