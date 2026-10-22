@@ -45,6 +45,12 @@ def build_parser() -> argparse.ArgumentParser:
     z = sub.add_parser("zmienne", help="szukaj zmiennych BDL albo sprawdź domyślne")
     z.add_argument("fraza", nargs="?", help="np. bezrobocie, wynagrodzenie, mieszkania")
     z.add_argument("--sprawdz", action="store_true", help="pokaż oficjalne nazwy domyślnych")
+    z.add_argument(
+        "--poziom",
+        choices=["powiat", "gmina"],
+        help="tylko zmienne publikowane co najmniej do tego poziomu",
+    )
+    z.add_argument("--wszystkie", action="store_true", help="pokaż też wskaźniki precyzji")
     return parser
 
 
@@ -132,6 +138,11 @@ def _variables(client: BdlClient, args) -> int:
             print(f"{ind.id:>7}  {ind.label:<36} GUS: {v.full_name} [{v.unit}]{_level(v)}")
         return 0 if ok else 1
     found = client.search_variables(args.fraza)
+    if not args.wszystkie:  # BAEL error margins, rarely what anyone wants
+        found = [v for v in found if "wskaźnik precyzji" not in v.full_name]
+    if args.poziom:
+        min_level = {"powiat": 5, "gmina": 6}[args.poziom]
+        found = [v for v in found if v.level is not None and v.level >= min_level]
     for v in found[:50]:
         print(f"{v.id:>7}  {v.full_name} [{v.unit}]{_level(v)}")
     if len(found) > 50:

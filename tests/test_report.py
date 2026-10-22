@@ -106,3 +106,9 @@ def test_variable_search_goes_through_subjects(capsys):
     assert main(["--demo", "zmienne", "wynagrodzenia"]) == 0
     out = capsys.readouterr().out
     assert "64428" in out and "Przeciętne miesięczne wynagrodzenia brutto" in out
+
+
+def test_variable_search_level_filter(capsys):
+    assert main(["--demo", "zmienne", "DEMO", "--poziom", "gmina"]) == 0
+    out = capsys.readouterr().out
+    assert "72305" in out and "64428" not in out  # wages only go down to powiat

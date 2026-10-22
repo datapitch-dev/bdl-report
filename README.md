@@ -7,8 +7,8 @@ i plik Excel z danymi oraz gotowymi wykresami, z porównaniem do województwa i 
 ```
 $ bdl-report raport Sopot
 Sopot (gmina miejska), lata 2015–2025
-  Ludność ogółem: …
-  Stopa bezrobocia rejestrowanego: … , dane: Powiat m. Sopot
+  Ludność ogółem: 31 205 (2025)
+  Przeciętne wynagrodzenie brutto: 10 561 (2025), dane: Powiat m. Sopot
   …
 Raport: raporty/sopot.html
 Excel:  raporty/sopot.xlsx
@@ -26,7 +26,7 @@ Excela, sklejanie lat i robienie wykresów. To narzędzie robi to w kilka sekund
 
 - **Znajduje jednostkę po nazwie.** `bdl-report szukaj Gdynia` pokazuje wszystkie pasujące
   jednostki z ich 12-cyfrowym id. Gdy nazwa jest jednoznaczna, `raport` sam wybiera jednostkę.
-- **Uzupełnia braki danymi powiatu.** Część wskaźników (np. wynagrodzenia, stopa bezrobocia)
+- **Uzupełnia braki danymi powiatu.** Część wskaźników (np. wynagrodzenia)
   GUS publikuje tylko do poziomu powiatu. Wtedy raport pokazuje dane powiatu i wyraźnie to
   zaznacza, zamiast zostawiać pustą rubrykę.
 - **Porównuje z województwem i Polską** tam, gdzie ma to sens (stopy, średnie), a nie przy
@@ -53,7 +53,7 @@ pip install -e .
 bdl-report szukaj Gdynia                      # lista jednostek z id
 bdl-report raport Sopot                       # raport dla ostatnich 11 lat
 bdl-report raport <id z szukaj> --od 2010   # po id, od wybranego roku
-bdl-report zmienne mieszkania                 # znajdź id innych wskaźników
+bdl-report zmienne mieszkania --poziom gmina  # id wskaźników dostępnych dla gmin
 bdl-report zmienne --sprawdz                  # oficjalne nazwy domyślnych wskaźników
 bdl-report raport Sopot --zmienne moje.json   # własny zestaw wskaźników
 ```
@@ -68,7 +68,7 @@ Plik JSON z listą wskaźników; id znajdziesz poleceniem `bdl-report zmienne <f
 ```json
 [
   {"id": 72305, "label": "Ludność ogółem"},
-  {"id": 60559, "label": "Stopa bezrobocia", "compare": true, "higher_is_better": false}
+  {"id": 64428, "label": "Wynagrodzenie brutto", "compare": true, "higher_is_better": true}
 ]
 ```
 
