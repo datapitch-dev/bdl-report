@@ -217,7 +217,7 @@ def _summary(ws: Worksheet, report: ReportData, footer: str) -> None:
         cell = ws.cell(
             row,
             2,
-            f"{series_title(s)}: zmienna BDL {s.indicator.id}, „{s.variable.name}”{unit_txt}",
+            f"{series_title(s)}: zmienna BDL {s.indicator.id}, „{s.variable.full_name}”{unit_txt}",
         )
         cell.font = _font(9, color=MUTED)
     row += 2
@@ -244,7 +244,7 @@ def _series_sheet(ws: Worksheet, report: ReportData, s: Series, footer: str) -> 
     subtitle = " · ".join(
         p
         for p in (
-            f"GUS: {s.variable.name}" if s.variable else "",
+            f"GUS: {s.variable.full_name}" if s.variable else "",
             f"jednostka miary: {unit_txt}" if unit_txt else "",
             f"dane powiatu ({s.source.name})" if s.source else "",
         )

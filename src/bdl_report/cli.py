@@ -12,7 +12,7 @@ from pathlib import Path
 
 from .builder import build
 from .cache import ResponseCache
-from .client import BdlClient, BdlError
+from .client import LEVEL_NAMES, BdlClient, BdlError, NotFound
 from .demo import GMINA, DemoSession
 from .excel import write_xlsx
 from .indicators import load_indicators
@@ -121,16 +121,26 @@ def _slug(name: str) -> str:
 
 def _variables(client: BdlClient, args) -> int:
     if args.sprawdz or not args.fraza:
+        ok = True
         for ind in load_indicators(None):
-            v = client.variable(ind.id)
-            print(f"{ind.id:>7}  {ind.label:<40} GUS: {v.name} [{v.unit}]")
-        return 0
+            try:
+                v = client.variable(ind.id)
+            except NotFound:
+                print(f"{ind.id:>7}  {ind.label:<36} BRAK TAKIEJ ZMIENNEJ W BDL")
+                ok = False
+                continue
+            print(f"{ind.id:>7}  {ind.label:<36} GUS: {v.full_name} [{v.unit}]{_level(v)}")
+        return 0 if ok else 1
     found = client.search_variables(args.fraza)
     for v in found[:50]:
-        print(f"{v.id:>7}  {v.name} [{v.unit}]")
+        print(f"{v.id:>7}  {v.full_name} [{v.unit}]{_level(v)}")
     if len(found) > 50:
         print(f"... i {len(found) - 50} więcej, zawęź frazę")
     return 0 if found else 1
+
+
+def _level(v) -> str:
+    return f" (najniżej: {LEVEL_NAMES.get(v.level, v.level).lower()})" if v.level else ""
 
 
 if __name__ == "__main__":

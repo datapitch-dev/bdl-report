@@ -27,15 +27,18 @@ _UNITS = {
     },
 }
 
+_SUBJECTS = {
+    "D1": "Ludność (DEMO)",
+    "D2": "Stopa bezrobocia rejestrowanego (DEMO)",
+    "D3": "Przeciętne miesięczne wynagrodzenia brutto (DEMO)",
+    "D4": "Podmioty gospodarki narodowej w rejestrze REGON (DEMO)",
+}
+
 _VARIABLES = {
-    72305: {"n1": "ludność", "n2": "ogółem", "measureUnitName": "osoba"},
-    60559: {"n1": "stopa bezrobocia rejestrowanego", "measureUnitName": "%"},
-    64428: {"n1": "przeciętne miesięczne wynagrodzenie brutto", "measureUnitName": "zł"},
-    10110: {
-        "n1": "podmioty gospodarki narodowej wpisane do rejestru REGON",
-        "n2": "ogółem",
-        "measureUnitName": "jed. gosp.",
-    },
+    72305: {"n1": "ogółem", "measureUnitName": "osoba", "subjectId": "D1", "level": 6},
+    60559: {"n1": "ogółem", "measureUnitName": "%", "subjectId": "D2", "level": 5},
+    64428: {"n1": "ogółem", "measureUnitName": "zł", "subjectId": "D3", "level": 5},
+    10110: {"n1": "ogółem", "measureUnitName": "jed. gosp.", "subjectId": "D4", "level": 6},
 }
 
 
@@ -93,9 +96,26 @@ class DemoSession:
             found = [
                 {"id": vid, **meta}
                 for vid, meta in _VARIABLES.items()
-                if phrase in " ".join(str(v) for v in meta.values()).lower()
+                if phrase in meta["n1"].lower()
             ]
             return _Response({"results": found})
+        if path == "subjects/search":
+            phrase = query.get("name", [""])[0].lower()
+            found = [
+                {"id": sid, "name": name, "hasVariables": True}
+                for sid, name in _SUBJECTS.items()
+                if phrase in name.lower()
+            ]
+            return _Response({"results": found})
+        if path == "variables":
+            sid = query.get("subject-id", [""])[0]
+            found = [{"id": vid, **m} for vid, m in _VARIABLES.items() if m["subjectId"] == sid]
+            return _Response({"results": found})
+        if path.startswith("subjects/"):
+            name = _SUBJECTS.get(path.split("/")[1])
+            return (
+                _Response({"id": path.split("/")[1], "name": name}) if name else _Response({}, 404)
+            )
         if path.startswith("variables/"):
             vid = int(path.split("/")[1])
             meta = _VARIABLES.get(vid)

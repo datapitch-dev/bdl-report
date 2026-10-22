@@ -78,7 +78,7 @@ def test_cli_search_and_variables(capsys):
     assert main(["--demo", "szukaj", "przykład"]) == 0
     assert "099999999996" in capsys.readouterr().out
     assert main(["--demo", "zmienne", "--sprawdz"]) == 0
-    assert "GUS: ludność, ogółem [osoba]" in capsys.readouterr().out
+    assert "GUS: Ludność (DEMO): ogółem [osoba] (najniżej: gmina)" in capsys.readouterr().out
 
 
 def test_report_file_names_are_ascii(tmp_path):
@@ -100,3 +100,9 @@ def test_excel_layout(tmp_path):
     assert sheet["B5"].value == "Rok" and sheet["C5"].value == "Powiat przykładowski (DEMO)"
     assert sheet["C6"].number_format == "#,##0"
     assert len(sheet._charts) == 1
+
+
+def test_variable_search_goes_through_subjects(capsys):
+    assert main(["--demo", "zmienne", "wynagrodzenia"]) == 0
+    out = capsys.readouterr().out
+    assert "64428" in out and "Przeciętne miesięczne wynagrodzenia brutto" in out

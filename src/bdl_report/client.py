@@ -71,15 +71,26 @@ class Variable:
     id: int
     name: str
     unit: str
+    subject_id: str = ""
+    level: int | None = None  # lowest unit level the variable is published for
+    subject: str = ""  # filled in by BdlClient; n1..n5 alone are often just "ogółem"
+
+    @property
+    def full_name(self) -> str:
+        return f"{self.subject}: {self.name}" if self.subject else self.name
 
     @classmethod
     def from_api(cls, body: dict) -> Variable:
-        # Variable names are split across n1..n5 (e.g. "ludność" / "ogółem").
+        # Variable names are split across n1..n5 (e.g. "ogółem" / "mężczyźni") and only make
+        # sense together with the name of their subject.
         parts = [body.get(f"n{i}") for i in range(1, 6)]
+        level = body.get("level")
         return cls(
             id=int(body["id"]),
             name=", ".join(p for p in parts if p),
             unit=body.get("measureUnitName") or "",
+            subject_id=body.get("subjectId") or "",
+            level=int(level) if level is not None else None,
         )
 
 
@@ -130,10 +141,36 @@ class BdlClient:
         return chain
 
     def variable(self, var_id: int) -> Variable:
-        return Variable.from_api(self._get(f"variables/{var_id}", []))
+        return self._with_subject(Variable.from_api(self._get(f"variables/{var_id}", [])))
 
-    def search_variables(self, phrase: str) -> list[Variable]:
-        return [Variable.from_api(v) for v in self._get_all("variables/search", [("name", phrase)])]
+    def search_variables(self, phrase: str, max_subjects: int = 8) -> list[Variable]:
+        """Variables whose own name or whose subject's name contains ``phrase``.
+
+        Variable names are often just "ogółem", so a search by subject ("bezrobocie",
+        "wynagrodzenia") is what usually finds the right one.
+        """
+        found = {
+            v["id"]: Variable.from_api(v)
+            for v in self._get_all("variables/search", [("name", phrase)])
+        }
+        subjects = [
+            s for s in self._get_all("subjects/search", [("name", phrase)]) if s.get("hasVariables")
+        ]
+        for subject in subjects[:max_subjects]:
+            for v in self._get_all("variables", [("subject-id", subject["id"])]):
+                found.setdefault(v["id"], Variable.from_api(v))
+        return [self._with_subject(v) for v in found.values()]
+
+    def subject_name(self, subject_id: str) -> str:
+        try:
+            return self._get(f"subjects/{subject_id}", []).get("name") or ""
+        except NotFound:
+            return ""
+
+    def _with_subject(self, variable: Variable) -> Variable:
+        if variable.subject_id:
+            variable.subject = self.subject_name(variable.subject_id)
+        return variable
 
     def data_by_unit(
         self, unit_id: str, var_ids: Iterable[int], years: Iterable[int]
